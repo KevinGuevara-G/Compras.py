@@ -12,7 +12,7 @@ ItemSolicitudFormSet = inlineformset_factory(
     SolicitudCompra,
     ItemSolicitud,
     fields=['codigo', 'cantidad', 'descripcion'],
-    extra=2, # Define cuántos renglones vacíos se le mostrarán al usuario por defecto
+    extra=1, # Define cuántos renglones vacíos se le mostrarán al usuario por defecto
     widgets={
         'codigo': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej. P001'}),
         'cantidad': forms.NumberInput(attrs={'class': 'form-control', 'min': 1}),

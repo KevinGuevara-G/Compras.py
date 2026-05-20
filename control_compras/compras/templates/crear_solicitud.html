@@ -9,50 +9,96 @@
     <div class="container mt-5">
         <div class="row justify-content-center">
             <div class="col-md-8">
-                <div class="card shadow">
+                <div class="card shadow mb-5">
                     <div class="card-header bg-primary text-white">
                         <h4 class="mb-0">Nueva Solicitud de Compra</h4>
                     </div>
                     <div class="card-body">
                         <p>Solicitante: <strong>{{ request.user.username }}</strong></p>
                         
-                        <form method="POST">
+                        <form method="POST" id="solicitud-form">
                             {% csrf_token %}
                             {{ formset.management_form }}
                             
                             <h5 class="mt-4 mb-3 text-secondary">Lista de Ítems Requeridos</h5>
                             
-                            {% for item_form in formset %}
-                                <div class="p-3 mb-3 border rounded bg-white position-relative">
-                                    <span class="badge bg-secondary position-absolute top-0 end-0 m-2">Ítem {{ forloop.counter }}</span>
-                                    <div class="row g-3">
-                                        <div class="col-md-8">
-                                            {{ item_form.codigo.label_tag }}
-                                            {{ item_form.codigo }}
-                                        </div>
-                                        <div class="col-md-4">
-                                            {{ item_form.cantidad.label_tag }}
-                                            {{ item_form.cantidad }}
-                                        </div>
-                                        <div class="col-12">
-                                            {{ item_form.descripcion.label_tag }}
-                                            {{ item_form.descripcion }}
+                            <div id="items-container">
+                                {% for item_form in formset %}
+                                    <div class="item-form p-3 mb-3 border rounded bg-white position-relative">
+                                        <span class="badge bg-secondary position-absolute top-0 end-0 m-2">Ítem</span>
+                                        <div class="row g-3">
+                                            <div class="col-md-8">
+                                                {{ item_form.codigo.label_tag }}
+                                                {{ item_form.codigo }}
+                                            </div>
+                                            <div class="col-md-4">
+                                                {{ item_form.cantidad.label_tag }}
+                                                {{ item_form.cantidad }}
+                                            </div>
+                                            <div class="col-12">
+                                                {{ item_form.descripcion.label_tag }}
+                                                {{ item_form.descripcion }}
+                                            </div>
                                         </div>
                                     </div>
-                                    {% if formset.can_delete and item_form.instance.pk %}
-                                        <div class="mt-2 text-danger">
-                                            {{ item_form.DELETE }} Eliminar este ítem
-                                        </div>
-                                    {% endif %}
-                                </div>
-                            {% endfor %}
+                                {% endfor %}
+                            </div>
                             
-                            <button type="submit" class="btn btn-success w-100 mt-3">Enviar Lista de Compra</button>
+                            <button type="button" id="add-item-btn" class="btn btn-outline-primary mb-4 w-100">
+                                ➕ Agregar otro ítem a la lista
+                            </button>
+                            
+                            <button type="submit" class="btn btn-success w-100">Enviar Lista de Compra</button>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <div id="empty-form-template" class="d-none">
+        <div class="item-form p-3 mb-3 border rounded bg-white position-relative">
+            <span class="badge bg-info position-absolute top-0 end-0 m-2">Nuevo Ítem</span>
+            <div class="row g-3">
+                <div class="col-md-8">
+                    {{ formset.empty_form.codigo.label_tag }}
+                    {{ formset.empty_form.codigo }}
+                </div>
+                <div class="col-md-4">
+                    {{ formset.empty_form.cantidad.label_tag }}
+                    {{ formset.empty_form.cantidad }}
+                </div>
+                <div class="col-12">
+                    {{ formset.empty_form.descripcion.label_tag }}
+                    {{ formset.empty_form.descripcion }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const itemsContainer = document.getElementById('items-container');
+        const addItemBtn = document.getElementById('add-item-btn');
+        // Este campo oculto de Django lleva la cuenta total de formularios enviados
+        const totalForms = document.getElementById('id_items-TOTAL_FORMS');
+
+        addItemBtn.addEventListener('click', function() {
+            // 1. Obtener la cantidad de formularios actuales instalados
+            const currentFormCount = itemsContainer.getElementsByClassName('item-form').length;
+            
+            // 2. Obtener el HTML de nuestro formulario vacío de plantilla
+            const templateHtml = document.getElementById('empty-form-template').innerHTML;
+            
+            // 3. Reemplazar la palabra clave '__prefix__' por el número de índice correspondiente
+            // Esto transforma cosas como 'items-__prefix__-nombre' en 'items-3-nombre'
+            const newFormHtml = templateHtml.replace(/__prefix__/g, currentFormCount);
+            
+            // 4. Insertar el nuevo bloque HTML al final del contenedor
+            itemsContainer.insertAdjacentHTML('beforeend', newFormHtml);
+            
+            // 5. Actualizar el contador oficial de Django para que al enviar el POST sepa cuántos procesar
+            totalForms.setAttribute('value', currentFormCount + 1);
+        });
+    </script>
 </body>
 </html>
