@@ -21,9 +21,9 @@ class SolicitudCompra(models.Model):
 class ItemSolicitud(models.Model):
     # Cada ítem debe pertenecer obligatoriamente a una solicitud de compra
     solicitud = models.ForeignKey(SolicitudCompra, on_delete=models.CASCADE, related_name='items')
-    nombre = models.CharField(max_length=200, verbose_name="Nombre del Ítem")
+    codigo = models.CharField(max_length=200, verbose_name="Código del Ítem")
     cantidad = models.PositiveIntegerField(default=1, verbose_name="Cantidad")
     descripcion = models.TextField(blank=True, null=True, verbose_name="Descripción/Justificación")
 
     def __str__(self):
-        return f"{self.nombre} (x{self.cantidad})"
+        return f"{self.codigo} (x{self.cantidad})"

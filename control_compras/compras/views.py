@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from .forms import SolicitudCompraForm
+from .forms import SolicitudCompraForm, ItemSolicitudFormSet
 
 @login_required
 def crear_solicitud(request):
@@ -8,10 +8,19 @@ def crear_solicitud(request):
         form = SolicitudCompraForm(request.POST)
         if form.is_valid():
             solicitud = form.save(commit=False)
-            solicitud.solicitante = request.user  # Asignamos automáticamente al usuario actual
-            solicitud.save()
-            return redirect('crear_solicitud')  # Por ahora redirige aquí mismo o a una lista de éxitos
+            solicitud.solicitante = request.user
+            solicitud.save() # Guardamos primero para generar el ID de la solicitud
+            
+            # Pasamos los datos del POST e inyectamos la solicitud recién creada
+            formset = ItemSolicitudFormSet(request.POST, instance=solicitud)
+            if formset.is_valid():
+                formset.save()
+                return redirect('crear_solicitud')
     else:
         form = SolicitudCompraForm()
-    
-    return render(request, 'compras/crear_solicitud.html', {'form': form})
+        formset = ItemSolicitudFormSet()
+        
+    return render(request, 'crear_solicitud.html', {
+        'form': form,
+        'formset': formset
+    })
